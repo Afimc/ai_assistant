@@ -12,7 +12,6 @@ const gcsUri = `gs://${config.bucketName}/`;
 
 async function uploadFile(filePath) {
   try {
-    // Upload the file to the specified bucket
     await storage.bucket(bucketName).upload(filePath, {
       destination: filePath,
     });
@@ -23,7 +22,10 @@ async function uploadFile(filePath) {
   }
 }
 
-async function transcribeAudio(audioName) {
+async function transcribeAudio(filePath) {
+  const audioName = path.basename(filePath); 
+  const baseName = path.parse(audioName).name; 
+
   const request = {
     audio: {
       uri: gcsUri + audioName
@@ -42,14 +44,13 @@ async function transcribeAudio(audioName) {
     console.log('Transcription Results:');
 
     let transcript = '';
-    response.results.forEach((result, index) => {
-      // transcript += `\nTranscript ${index + 1}:\n`;
-      result.alternatives.forEach((alternative, altIndex) => {
+    response.results.forEach((result) => {
+      result.alternatives.forEach((alternative) => {
         transcript += ` ${alternative.transcript}\n`;
       });
     });
     
-    const outputFilePath = path.join(__dirname, `${audioName}.txt`);
+    const outputFilePath = path.join(__dirname, 'temp',`${baseName}.txt`);
     fs.writeFileSync(outputFilePath, transcript);
     console.log(`Transcription for ${audioName} saved to ${outputFilePath}`);
   } catch (error) {
@@ -57,12 +58,14 @@ async function transcribeAudio(audioName) {
   }
 }
 
+
 async function transcriber() {
-  const filesForUpload = ["audio.mp3", "audio1.mp3", "audio2.mp3"];
-  for (const audioName of filesForUpload) {
-    await uploadFile(audioName);
-    await transcribeAudio(audioName);
+  const filesForUpload = ["./temp/audio.mp3", "./temp/audio1.mp3", "./temp/audio2.mp3"];
+  for (const filePath of filesForUpload) {
+    await uploadFile(filePath);
+    await transcribeAudio(filePath);
   }
 }
+
 
 const res = transcriber();
