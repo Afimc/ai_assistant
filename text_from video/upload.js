@@ -5,7 +5,7 @@ const config = require('./config');
 const storage = new Storage({ keyFilename: config.JSON_key_file_path });
 
 const bucketName = config.bucketName;
-const filePath = 'audio.mp3'; 
+const filePath = './temp2/audiofile.mp3'; 
 const destFileName = 'audio.mp3'; 
 
 async function uploadFile() {
